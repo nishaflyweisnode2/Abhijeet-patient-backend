@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { createTerms, getAllTerms } = require("../controller/termsAndConditionController");
+const { createBooking } = require("../controller/bookingController");
 
 const { authenticateUser,
     authorizeUser,
@@ -9,7 +9,9 @@ const { authenticateUser,
     authenticateAdmin } = require('../middleware/auth');
 
 
-router.post("/privacy-policy", authenticateUser, createTerms);
-router.get("/privacy-policy", getAllTerms); 
+
+router.post("/bookings", authenticateUser, createBooking);
+
+
 
 module.exports = router;

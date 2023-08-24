@@ -56,7 +56,7 @@ const verifyOTP = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
-      return res.status(404).send({ message: "User are not found" });
+      return res.status(404).send({ status: 404, message: "User are not found" });
     }
 
     if (user.otp != req.body.otp) {

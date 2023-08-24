@@ -26,13 +26,24 @@ const {
     createHospital,
     getHospitalById,
     getAllHospitals,
+    getRecentHospitals,
+    searchHospitalsByName,
 } = require("../controller/hospitalController");
+
+const { authenticateUser,
+    authorizeUser,
+    authorization,
+    authenticateAdmin } = require('../middleware/auth');
 
 
 
 router.post("/hospitals", upload.single("hospitalImage"), createHospital);
-router.get("/hospitals/:id", getHospitalById);
-router.get("/hospitals", getAllHospitals);
+router.get("/hospitals/:id", authenticateUser, getHospitalById);
+router.get("/hospitals", authenticateUser, getAllHospitals);
+router.get("/recent-hospitals", authenticateUser, getRecentHospitals);
+router.get("/search-hospitals", authenticateUser, searchHospitalsByName);
+
+
 
 
 
