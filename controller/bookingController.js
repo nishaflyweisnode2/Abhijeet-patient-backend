@@ -43,6 +43,50 @@ const createBooking = async (req, res) => {
 
 
 
+const getAllBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find();
+    res.status(200).json({
+      message: "Bookings retrieved successfully",
+      data: bookings,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
+};
+
+
+
+const getBookingById = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        status: 404,
+        message: "Booking not found",
+      });
+    }
+
+    res.status(200).json({
+      message: "Booking retrieved successfully",
+      data: booking,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
+};
+
+
+
+
 module.exports = {
   createBooking,
+  getAllBookings,
+  getBookingById,
 };

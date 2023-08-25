@@ -8,6 +8,8 @@ router.use("/privacy", require("./privacyPolicyRoutes"));
 router.use("/hospital", require("./hospitalRoutes"));
 router.use("/doctor", require("./doctorRoutes"));
 router.use("/booking", require("./bookingRoute"));
+router.use("/chat", require("./chatRoutes"));
+router.use("/read", require("./readRoutes"));
 
 
 module.exports = router;
