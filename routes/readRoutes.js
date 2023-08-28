@@ -27,12 +27,19 @@ const {
     createRead,
     getAllReads,
     getReadById,
+    getLatestRead,
+    getDailyReads,
+    getWeeklyReads
+
 } = require('../controller/readController');
 
 
 router.post('/reads', upload.single("image"), createRead);
 router.get('/reads', getAllReads);
 router.get("/reads/:id", getReadById);
+router.get("/reads-latest", getLatestRead);
+router.get("/reads/daily/:date", getDailyReads);
+router.get("/reads-weekly", getWeeklyReads);
 
 
 

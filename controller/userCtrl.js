@@ -1,7 +1,10 @@
 require('dotenv').config()
 const OTP = require("../config/OTP-Token");
 const User = require("../models/userModel");
+const Doctor = require("../models/doctorModel");
 
+
+const { findActiveTreatments, findDoctorsByActiveTreatments, updateUserActiveTreatments, getAllSpecialisations } = require('../middleware/helperFunction')
 
 
 // image upload function start 
@@ -223,6 +226,56 @@ const editProfile = async (req, res) => {
   }
 };
 
+
+const setActiveTreatments = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let { activeTreatments } = req.body;
+
+    if (typeof activeTreatments === 'string') {
+      activeTreatments = activeTreatments.split(',').map(item => item.trim());
+    }
+    const allSpecialisations = await getAllSpecialisations();
+    const invalidSpecialisations = activeTreatments.filter(specialisation => !allSpecialisations.includes(specialisation));
+    if (invalidSpecialisations.length > 0) {
+      return res.status(400).json({ message: "Invalid specialisations provided", invalidSpecialisations });
+    }
+
+    const updatedUser = await updateUserActiveTreatments(id, activeTreatments);
+    res.status(200).json({ message: "Active treatments updated", data: updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+const getDoctorsByActiveTreatments = async (req, res) => {
+  try {
+    const { activeTreatments: specialisation } = req.query;
+
+    const query = {};
+
+    if (specialisation) {
+      query.specialisation = { $regex: specialisation, $options: "i" };
+    }
+
+    const doctors = await Doctor.find(query);
+
+    res.status(200).json({ status: 200, message: "Doctors with matching active treatments", data: doctors });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+
+
+
+
+
+
 module.exports = {
   SignUpUser,
   verifyOTP,
@@ -230,5 +283,7 @@ module.exports = {
   registrationFrom,
   updateProfileImage,
   getUserProfileById,
-  editProfile
+  editProfile,
+  setActiveTreatments,
+  getDoctorsByActiveTreatments,
 };

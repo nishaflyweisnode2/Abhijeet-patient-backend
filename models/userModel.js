@@ -65,6 +65,9 @@ const userSchema = new mongoose.Schema({
       type: String,
     },
   },
+  activeTreatments: [{
+    type: String,
+  }],
 
 }, { timestamps: true }
 );
