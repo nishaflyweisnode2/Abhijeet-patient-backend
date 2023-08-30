@@ -34,12 +34,19 @@ const {
 } = require('../controller/readController');
 
 
+const { authenticateUser,
+    authorizeUser,
+    authorization,
+    authenticateAdmin } = require('../middleware/auth');
+
+
+
 router.post('/reads', upload.single("image"), createRead);
-router.get('/reads', getAllReads);
-router.get("/reads/:id", getReadById);
-router.get("/reads-latest", getLatestRead);
-router.get("/reads/daily/:date", getDailyReads);
-router.get("/reads-weekly", getWeeklyReads);
+router.get('/reads', authenticateUser, getAllReads);
+router.get("/reads/:id", authenticateUser, getReadById);
+router.get("/reads-latest", authenticateUser, getLatestRead);
+router.get("/reads/daily/:date", authenticateUser, getDailyReads);
+router.get("/reads-weekly", authenticateUser, getWeeklyReads);
 
 
 

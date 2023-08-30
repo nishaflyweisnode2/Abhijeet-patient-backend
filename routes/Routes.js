@@ -10,6 +10,7 @@ router.use("/doctor", require("./doctorRoutes"));
 router.use("/booking", require("./bookingRoute"));
 router.use("/chat", require("./chatRoutes"));
 router.use("/read", require("./readRoutes"));
+router.use("/faqs", require("./faqsRoute"));
 
 
 module.exports = router;

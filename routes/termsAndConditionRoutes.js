@@ -9,7 +9,7 @@ const { authenticateUser,
     authenticateAdmin } = require('../middleware/auth');
 
 
-router.post("/privacy-policy", authenticateUser, createTerms);
-router.get("/privacy-policy", getAllTerms); 
+router.post("/terms", authenticateUser, createTerms);
+router.get("/terms", authenticateUser, getAllTerms); 
 
 module.exports = router;

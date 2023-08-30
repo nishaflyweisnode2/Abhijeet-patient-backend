@@ -12,7 +12,7 @@ router.post("/verify/otp/:id", verifyOTP);
 router.post("/resend/otp/:id", resendOTP);
 router.put("/users/:id", authenticateUser, authorization, registrationFrom);
 router.put('/update/:id/profileImage', authenticateUser, authorization, updateProfileImage);
-router.get("/profile/:id", authenticateUser, getUserProfileById);
+router.get("/profile/:id", authenticateUser, authorization, getUserProfileById);
 router.put("/user-id/:id", authenticateUser, authorization, editProfile);
 router.post("/users/:id/active-treatments", authenticateUser, authorization, setActiveTreatments);
 router.get("/users/activeTreatments", authenticateUser, getDoctorsByActiveTreatments);
