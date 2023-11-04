@@ -68,6 +68,10 @@ const userSchema = new mongoose.Schema({
   activeTreatments: [{
     type: String,
   }],
+  verified: {
+    type: Boolean,
+    default: false,
+  },
 
 }, { timestamps: true }
 );

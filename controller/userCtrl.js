@@ -29,7 +29,7 @@ const upload = multer({ storage: storage }).array('profileImage', 2);
 
 
 
-const SignUpUser = async (req, res) => {
+const SignUpUser1 = async (req, res) => {
   try {
     const { mobile } = req.body;
     if (!mobile) {
@@ -55,7 +55,7 @@ const SignUpUser = async (req, res) => {
   }
 };
 
-const verifyOTP = async (req, res) => {
+const verifyOTP1 = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -77,7 +77,126 @@ const verifyOTP = async (req, res) => {
   }
 };
 
+const otpCache = {};
+
+
+const SignUpUser = async (req, res) => {
+  try {
+    const { mobile } = req.body;
+    if (!mobile) {
+      return res.status(400).json({ status: 400, message: "Mobile is required" });
+    }
+
+    const findUser = await User.findOne({ mobile, verified: true });
+    if (findUser) {
+      return res.status(409).json({ status: 409, message: "Mobile number already in use" });
+    }
+
+    const otp = OTP.generateOTP();
+    otpCache[mobile] = { otp, verified: false };
+
+    const newUser = new User({ mobile, otp, verified: false });
+    await newUser.save();
+
+    return res.status(200).json({
+      message: "OTP sent to the mobile number",
+      data: otp,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
+};
+
+const verifyOTP = async (req, res) => {
+  try {
+    const { mobile, otp } = req.body;
+
+    if (!otpCache[mobile]) {
+      return res.status(400).json({
+        status: 400,
+        message: "No OTP found for this mobile number. Please request a new OTP."
+      });
+    }
+
+    if (otpCache[mobile].otp !== otp) {
+      return res.status(400).json({
+        status: 400,
+        message: "Invalid OTP. Please check the OTP sent to your mobile."
+      });
+    }
+
+    if (otpCache[mobile].verified) {
+      return res.status(200).json({
+        message: "User is already verified."
+      });
+    }
+
+    otpCache[mobile].verified = true;
+
+    const existingUser = await User.findOne({ mobile });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        status: 404,
+        message: "User not found."
+      });
+    }
+
+    existingUser.verified = true;
+    await existingUser.save();
+
+    const token = OTP.generateJwtToken(existingUser._id);
+
+    return res.status(200).json({
+      message: "User verified successfully",
+      token: token,
+      data: existingUser
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({ error: error.message });
+  }
+};
+
 const resendOTP = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findOne({ _id: id });
+    if (!user) {
+      return res.status(404).send({ status: 404, message: "User not found" });
+    }
+
+    if (!otpCache[user.mobile]) {
+      otpCache[user.mobile] = {}; // Initialize the cache entry if it doesn't exist
+    }
+
+    const otp = OTP.generateOTP();
+    otpCache[user.mobile].otp = otp; // Overwrite the old OTP with the new one
+
+    const otpExpiration = new Date(Date.now() + 5 * 60 * 1000);
+    const updated = await User.findOneAndUpdate(
+      { _id: user._id },
+      { otp, otpExpiration, verified: false },
+      { new: true }
+    );
+
+    let obj = {
+      id: updated._id,
+      otp: updated.otp,
+      mobile: updated.mobile,
+    };
+    res.status(200).send({ status: 200, message: "OTP resent", data: obj });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ status: 500, message: "Server error: " + error.message });
+  }
+};
+
+
+
+const resendOTP1 = async (req, res) => {
   const { id } = req.params;
   try {
     const user = await User.findOne({ _id: id });
@@ -104,6 +223,12 @@ const resendOTP = async (req, res) => {
       .send({ status: 500, message: "Server error" + error.message });
   }
 };
+
+
+
+
+
+
 
 
 const registrationFrom = async (req, res) => {
@@ -175,6 +300,21 @@ const updateProfileImage = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Failed to update Profile image' });
+  }
+};
+
+
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    return res.status(200).json({
+      status: 200,
+      message: "All users retrieved successfully",
+      data: users,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: 500, message: "Server error", error: error.message });
   }
 };
 
@@ -282,6 +422,7 @@ module.exports = {
   resendOTP,
   registrationFrom,
   updateProfileImage,
+  getAllUsers,
   getUserProfileById,
   editProfile,
   setActiveTreatments,

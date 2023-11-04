@@ -1,8 +1,10 @@
 const express = require("express");
+const serverless = require("serverless-http");
 const app = express();
 const cors = require("cors");
 const dbConnect = require("./config/dbConnect");
 require("dotenv").config();
+
 
 dbConnect();
 
@@ -18,3 +20,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}!`);
 });
+
+module.exports = { handler: serverless(app) };
