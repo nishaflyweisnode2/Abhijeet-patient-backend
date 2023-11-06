@@ -179,7 +179,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/abhijeet-backend/dev/1699106625782-2023-11-04T14:03:45.782Z/abhijeet-backend.zip"
+                "S3Key": "serverless/abhijeet-backend/dev/1699272992006-2023-11-06T12:16:32.006Z/abhijeet-backend.zip"
               },
               "Handler": "index.handler",
               "Runtime": "nodejs18.x",
@@ -197,14 +197,14 @@
               "AppLogGroup"
             ]
           },
-          "AppLambdaVersionTYpTSrC3Xmgod18FHtk4kutJA9JsQ62SZ9iZ9i4a44": {
+          "AppLambdaVersiongAbD8xn3UwQ9BKmE8iMC9DRHvKXyR8ZasTOyvU2BGo": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "AppLambdaFunction"
               },
-              "CodeSha256": "NZIR1XWc6cWvHIYc+i4qIReVyGFcyDHOWxPh659yVcE="
+              "CodeSha256": "zl0sYaJyfUHTe4sjF7sHa8MjBi+DwoEfLV/S7HzDR8U="
             }
           },
           "ApiGatewayRestApi": {
@@ -425,7 +425,7 @@
               "AppLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1699106555183": {
+          "ApiGatewayDeployment1699272912995": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -490,7 +490,7 @@
           "AppLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "AppLambdaVersionTYpTSrC3Xmgod18FHtk4kutJA9JsQ62SZ9iZ9i4a44"
+              "Ref": "AppLambdaVersiongAbD8xn3UwQ9BKmE8iMC9DRHvKXyR8ZasTOyvU2BGo"
             },
             "Export": {
               "Name": "sls-abhijeet-backend-dev-AppLambdaFunctionQualifiedArn"
@@ -671,7 +671,7 @@
         "timeout": 6,
         "runtime": "nodejs18.x",
         "vpc": {},
-        "versionLogicalId": "AppLambdaVersionTYpTSrC3Xmgod18FHtk4kutJA9JsQ62SZ9iZ9i4a44"
+        "versionLogicalId": "AppLambdaVersiongAbD8xn3UwQ9BKmE8iMC9DRHvKXyR8ZasTOyvU2BGo"
       }
     },
     "configValidationMode": "warn",
@@ -693,7 +693,7 @@
     "artifact": "C:\\Users\\Dev\\Downloads\\project\\Abhijeet-patient-backend\\.serverless\\abhijeet-backend.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/abhijeet-backend/dev/1699106625782-2023-11-04T14:03:45.782Z",
+    "artifactDirectoryName": "serverless/abhijeet-backend/dev/1699272992006-2023-11-06T12:16:32.006Z",
     "artifact": "abhijeet-backend.zip"
   }
 }

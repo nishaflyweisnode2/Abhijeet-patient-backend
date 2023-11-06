@@ -2,7 +2,8 @@ require('dotenv').config()
 const OTP = require("../config/OTP-Token");
 const User = require("../models/userModel");
 const Doctor = require("../models/doctorModel");
-
+const { validationResult } = require('express-validator');
+const { body, check } = require('express-validator');
 
 const { findActiveTreatments, findDoctorsByActiveTreatments, updateUserActiveTreatments, getAllSpecialisations } = require('../middleware/helperFunction')
 
@@ -77,11 +78,41 @@ const verifyOTP1 = async (req, res) => {
   }
 };
 
-const otpCache = {};
-
-
-const SignUpUser = async (req, res) => {
+const resendOTP1 = async (req, res) => {
+  const { id } = req.params;
   try {
+    const user = await User.findOne({ _id: id });
+    if (!user) {
+      return res.status(404).send({ status: 404, message: "User not found" });
+    }
+    const otp = OTP.generateOTP();
+    const otpExpiration = new Date(Date.now() + 5 * 60 * 1000);
+    const updated = await User.findOneAndUpdate(
+      { _id: user._id },
+      { otp, otpExpiration, },
+      { new: true }
+    );
+    let obj = {
+      id: updated._id,
+      otp: updated.otp,
+      mobile: updated.mobile,
+    };
+    res.status(200).send({ status: 200, message: "OTP resent", data: obj });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ status: 500, message: "Server error" + error.message });
+  }
+};
+
+const SignUpUser2 = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ status: 400, errors: errors.array() });
+    }
+
     const { mobile } = req.body;
     if (!mobile) {
       return res.status(400).json({ status: 400, message: "Mobile is required" });
@@ -109,8 +140,62 @@ const SignUpUser = async (req, res) => {
   }
 };
 
+
+const otpCache = {};
+
+const SignUpUser = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ status: 400, errors: errors.array() });
+    }
+
+    const { mobile } = req.body;
+    if (!mobile) {
+      return res.status(400).json({ status: 400, message: "Mobile is required" });
+    }
+
+    const existingUser = await User.findOne({ mobile, verified: false });
+
+    if (existingUser) {
+      // User with the same mobile number already exists and is not verified
+      const otp = OTP.generateOTP();
+      otpCache[mobile] = { otp, verified: false };
+
+      // Send the OTP to the user (implementation not shown in the code)
+      // sendOTPToUser(mobile, otp);
+
+      return res.status(200).json({
+        message: "OTP sent to the mobile number",
+        data: otp,
+      });
+    }
+
+    const otp = OTP.generateOTP();
+    otpCache[mobile] = { otp, verified: false };
+
+    const newUser = new User({ mobile, otp, verified: false });
+    await newUser.save();
+
+    return res.status(200).json({
+      message: "OTP sent to the mobile number",
+      data: otp,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
+};
+
+
 const verifyOTP = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ status: 400, errors: errors.array() });
+    }
+
     const { mobile, otp } = req.body;
 
     if (!otpCache[mobile]) {
@@ -127,20 +212,19 @@ const verifyOTP = async (req, res) => {
       });
     }
 
-    if (otpCache[mobile].verified) {
-      return res.status(200).json({
-        message: "User is already verified."
-      });
-    }
-
-    otpCache[mobile].verified = true;
-
     const existingUser = await User.findOne({ mobile });
 
     if (!existingUser) {
       return res.status(404).json({
         status: 404,
         message: "User not found."
+      });
+    }
+
+    if (existingUser.verified) {
+      return res.status(400).json({
+        status: 400,
+        message: "User is already verified."
       });
     }
 
@@ -160,9 +244,16 @@ const verifyOTP = async (req, res) => {
   }
 };
 
+
+
 const resendOTP = async (req, res) => {
-  const { id } = req.params;
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ status: 400, errors: errors.array() });
+    }
+
+    const { id } = req.params;
     const user = await User.findOne({ _id: id });
     if (!user) {
       return res.status(404).send({ status: 404, message: "User not found" });
@@ -195,67 +286,49 @@ const resendOTP = async (req, res) => {
 };
 
 
-
-const resendOTP1 = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const user = await User.findOne({ _id: id });
-    if (!user) {
-      return res.status(404).send({ status: 404, message: "User not found" });
-    }
-    const otp = OTP.generateOTP();
-    const otpExpiration = new Date(Date.now() + 5 * 60 * 1000);
-    const updated = await User.findOneAndUpdate(
-      { _id: user._id },
-      { otp, otpExpiration, },
-      { new: true }
-    );
-    let obj = {
-      id: updated._id,
-      otp: updated.otp,
-      mobile: updated.mobile,
-    };
-    res.status(200).send({ status: 200, message: "OTP resent", data: obj });
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .send({ status: 500, message: "Server error" + error.message });
-  }
-};
-
-
-
-
-
-
-
-
 const registrationFrom = async (req, res) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ status: 400, errors: errors.array() });
+    }
+
     const { id } = req.params;
     const updates = req.body;
 
     const findUser = await User.findOne({ mobile: req.body.mobile });
+
     if (findUser && findUser._id.toString() !== id) {
       return res.status(409).json({ status: 409, message: "Mobile number already in use" });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(id, updates, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { $set: { isProfileUpdated: true, ...updates } },
+      { new: true }
+    );
 
     if (!updatedUser) {
-      return res.status(404).json("User not found");
+      return res.status(404).json({ status: 404, message: "User not found" });
     }
 
     res.status(200).json({
+      status: 200,
       message: "User updated successfully",
       data: updatedUser,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
+      status: 500,
       error: error.message,
     });
   }
+};
+
+module.exports = {
+  registrationFrom,
 };
 
 
@@ -387,7 +460,6 @@ const setActiveTreatments = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 
 const getDoctorsByActiveTreatments = async (req, res) => {

@@ -72,6 +72,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  isProfileUpdated: {
+    type: Boolean,
+    default: false,
+  },
 
 }, { timestamps: true }
 );
