@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   profileImage: [{ type: String }],
+  // profileImage: { type: String },
   userType: {
     type: String,
     enum: ["Admin", "User"],
@@ -80,4 +81,4 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true }
 );
 
-module.exports = mongoose.model("users1", userSchema);
+module.exports = mongoose.model("user", userSchema);
