@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { createBooking, getAllBookings, getBookingById } = require("../controller/bookingController");
+const { createBooking, getAllBookings, getBookingById, getBookingsByUserId } = require("../controller/bookingController");
 
 const { authenticateUser,
     authorizeUser,
@@ -13,6 +13,8 @@ const { authenticateUser,
 router.post("/bookings", authenticateUser, createBooking);
 router.get("/bookings", authenticateUser, getAllBookings);
 router.get("/bookings/:id", authenticateUser, getBookingById);
+router.get('/bookings/user/:userId', authenticateUser, getBookingsByUserId);
+
 
 
 

@@ -6,7 +6,7 @@ const Hospital = require("../models/hospitalModel");
 
 const createBooking = async (req, res) => {
   try {
-    const { doctorId, date, timeSlot } = req.body;
+    const { doctorId, date, timeSlot, chooseTime } = req.body;
     const userId = req.user.id;
 
     const doctor = await Doctor.findById(doctorId);
@@ -28,6 +28,7 @@ const createBooking = async (req, res) => {
       date,
       timeSlot,
       selectedTime,
+      chooseTime
     });
 
     res.status(201).json({
@@ -83,10 +84,34 @@ const getBookingById = async (req, res) => {
 };
 
 
+const getBookingsByUserId = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const bookings = await Booking.find({ user: userId });
+
+    if (!bookings || bookings.length === 0) {
+      return res.status(404).json({
+        status: 404,
+        message: "Bookings not found for the specified user",
+      });
+    }
+
+    res.status(200).json({
+      message: "Bookings retrieved successfully",
+      data: bookings,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+  }
+};
+
 
 
 module.exports = {
   createBooking,
   getAllBookings,
   getBookingById,
+  getBookingsByUserId,
 };

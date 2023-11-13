@@ -105,7 +105,7 @@ const getLatestRead = async (req, res) => {
 };
 
 
-const getDailyReads = async (req, res) => {
+const getDailyReads1 = async (req, res) => {
     try {
         const { date } = req.params;
 
@@ -130,6 +130,45 @@ const getDailyReads = async (req, res) => {
             error: error.message,
         });
     }
+};
+
+const getDailyReads = async (req, res) => {
+    try {
+        const { date } = req.params;
+
+        const reads = await Read.find({
+            createdAt: {
+                $gte: new Date(date),
+                $lt: new Date(date).setDate(new Date(date).getDate() + 1),
+            },
+        }).sort({ createdAt: -1 });
+
+        if (!reads || reads.length === 0) {
+            return res.status(404).json({ message: "No reads found for the specified date" });
+        }
+
+        const summary = calculateSummary(reads);
+
+        res.status(200).json({
+            status: 200,
+            message: "Daily reads summary retrieved successfully",
+            data: summary, reads
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: error.message,
+        });
+    }
+};
+
+// Function to calculate summary based on reads
+const calculateSummary = (reads) => {
+    const summary = {
+        totalReads: reads.length,
+        uniqueDescriptions: Array.from(new Set(reads.map(read => read.description))),
+    };
+
+    return summary;
 };
 
 

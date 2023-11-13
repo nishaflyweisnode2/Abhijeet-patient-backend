@@ -23,6 +23,9 @@ const bookingSchema = new mongoose.Schema({
   selectedTime: {
     type: String,
   },
+  chooseTime: {
+    type: String,
+  },
 
 
 }, { timestamps: true });
