@@ -16,4 +16,10 @@ const storage = new CloudinaryStorage({
     },
 });
 const upload = multer({ storage: storage });
+
+const storage1 = new CloudinaryStorage({ cloudinary: cloudinary, params: { folder: "Abhijeet/images/banner", allowed_formats: ["webp", "avif", "jpg", "jpeg", "png", "PNG", "xlsx", "xls", "pdf", "PDF"], }, });
+const bannerUpload = multer({ storage: storage1 });
+
+
+module.exports = { upload, bannerUpload }
 // upload image End

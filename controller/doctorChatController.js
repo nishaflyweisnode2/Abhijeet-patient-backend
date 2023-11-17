@@ -1,0 +1,67 @@
+const Message = require("../models/doctorChatModel");
+const User = require("../models/userModel");
+const Doctor = require("../models/doctorModel");
+const mongoose = require("mongoose");
+
+
+
+
+const sendMessage = async (req, res) => {
+    try {
+        const { sender, receiver, content } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(sender) || !mongoose.Types.ObjectId.isValid(receiver)) {
+            return res.status(400).json({ status: 400, message: "Invalid sender or receiver ID" });
+        }
+
+        const senderUser = await User.findById(sender);
+        const receiverUser = await Doctor.findById(receiver);
+
+        if (!senderUser) {
+            return res.status(409).json({ status: 409, message: "Sender not found" });
+        }
+        if (!receiverUser) {
+            return res.status(409).json({ status: 409, message: "Receiver not found" });
+        }
+
+        const newMessage = await Message.create({ sender, receiver, content });
+        res.status(201).json({
+            message: "Message sent successfully",
+            data: newMessage,
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: error.message,
+        });
+    }
+};
+
+
+
+
+const getConversation = async (req, res) => {
+    try {
+        const { user1, user2 } = req.params;
+        const messages = await Message.find({
+            $or: [
+                { sender: user1, receiver: user2 },
+                { sender: user2, receiver: user1 },
+            ],
+        }).sort({ createdAt: 1 });
+        res.status(200).json({
+            message: "Conversation retrieved successfully",
+            data: messages,
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: error.message,
+        });
+    }
+};
+
+
+
+module.exports = {
+    sendMessage,
+    getConversation,
+};

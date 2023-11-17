@@ -4,6 +4,8 @@ const User = require("../models/userModel");
 const Doctor = require("../models/doctorModel");
 const { validationResult } = require('express-validator');
 const { body, check } = require('express-validator');
+const Notification = require('../models/notificationModel');
+
 
 const { findActiveTreatments, findDoctorsByActiveTreatments, updateUserActiveTreatments, getAllSpecialisations } = require('../middleware/helperFunction')
 
@@ -50,6 +52,15 @@ const SignUpUser = async (req, res) => {
     const otp = OTP.generateOTP();
     const newUser = await User.create({ mobile, otp });
     await newUser.save();
+
+    const welcomeMessage = `Welcome, ${newUser.mobile}! Thank you for registering.`;
+    const welcomeNotification = new Notification({
+      recipient: newUser._id,
+      content: welcomeMessage,
+      type: 'welcome',
+    });
+    await welcomeNotification.save();
+
     res.status(201).json({
       message: "User created successfully",
       data: newUser,
@@ -184,6 +195,14 @@ const registrationFrom = async (req, res) => {
     if (!updatedUser) {
       return res.status(404).json({ status: 404, message: "User not found" });
     }
+
+    const welcomeMessage = `Welcome, ${updatedUser.name}! Thank you for completing profile.`;
+    const welcomeNotification = new Notification({
+      recipient: updatedUser._id,
+      content: welcomeMessage,
+      type: 'welcome',
+    });
+    await welcomeNotification.save();
 
     res.status(200).json({
       status: 200,
@@ -349,6 +368,58 @@ const getDoctorsByActiveTreatments = async (req, res) => {
 };
 
 
+const createNotification = async (req, res) => {
+  try {
+    const { recipient, content } = req.body;
+
+    const notification = new Notification({ recipient, content });
+    await notification.save();
+
+    return res.status(201).json({ status: 201, message: 'Notification created successfully', data: notification });
+  } catch (error) {
+    return res.status(500).json({ status: 500, message: 'Error creating notification', error: error.message });
+  }
+};
+
+
+const markNotificationAsRead = async (req, res) => {
+  try {
+    const notificationId = req.params.notificationId;
+
+    const notification = await Notification.findByIdAndUpdate(
+      notificationId,
+      { status: 'read' },
+      { new: true }
+    );
+
+    if (!notification) {
+      return res.status(404).json({ status: 404, message: 'Notification not found' });
+    }
+
+    return res.status(200).json({ status: 200, message: 'Notification marked as read', data: notification });
+  } catch (error) {
+    return res.status(500).json({ status: 500, message: 'Error marking notification as read', error: error.message });
+  }
+};
+
+
+const getNotificationsForUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ status: 404, message: 'User not found' });
+    }
+
+    const notifications = await Notification.find({ recipient: userId });
+
+    return res.status(200).json({ status: 200, message: 'Notifications retrieved successfully', data: notifications });
+  } catch (error) {
+    return res.status(500).json({ status: 500, message: 'Error retrieving notifications', error: error.message });
+  }
+};
+
 
 
 
@@ -368,4 +439,7 @@ module.exports = {
   editProfile,
   setActiveTreatments,
   getDoctorsByActiveTreatments,
+  createNotification,
+  markNotificationAsRead,
+  getNotificationsForUser
 };
